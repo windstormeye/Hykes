@@ -22,8 +22,8 @@ Hykes::Hykes(QWidget *parent) :
     ui->setupUi(this);
 
     // 初始化图
-    redMap = new CMap(11);
-    blueMap = new CMap(11);
+//    redMap = new CMap(11);
+//    blueMap = new CMap(11);
 
     // 设置两个选择按钮
     QRadioButton *radioBtn1 = new QRadioButton("红方先手", this);
@@ -105,6 +105,14 @@ void Hykes::radioBtnClick()
 
 void Hykes::resetBtnClick()
 {
+    for(int i = 0; i < 11; i++)
+    {
+        for(int j = 0; j < 11; j++)
+        {
+            _redBoard[i][j] = '.';
+            _blueBoard[i][j] = '.';
+        }
+    }
     for(int i = 0; i < chessmanBtn.size(); i++)
     {
        chessmanBtn[i]->setStyleSheet("border-image: url(:/new/prefix1/000.png);");
@@ -125,28 +133,41 @@ void Hykes::onChessmanClick()
     {
         chessmanBtn.push_back(btn);
 
-        int y = (btn->pos().y() - 51) / 37;
-        int x = ((btn->pos().x() - 70) - (y * 20)) / 40;
+        int x = (btn->pos().y() - 51) / 37;
+        int y = ((btn->pos().x() - 70) - (x * 20)) / 40;
 
 
-//        btn->setText(QString::number(x,10) +"-"+ QString::number(y, 10));
+
+        btn->setText(QString::number(x,10) +"-"+ QString::number(y, 10));
         if(isRed)
         {
             btn->setStyleSheet("border-image: url(:/new/prefix1/111.png);");
             // 点击后让按钮变成不可点击的状态
-            redMap->setValueToMatrixForUndirectedGraph(x, y);
-            redMap->printMatrix();
-            cout << "red" << endl;
+            _redBoard[x][y] = 'r';
+            Board<char> board(_redBoard);
+            redDFS searcher(&board, 'r');
+            bool result = searcher.solve();
+            if(result)
+            {
+                QMessageBox::information(this, "胜利","✌️✌️✌️红方胜利✌️✌️✌️\n\n下一局为蓝方先手", QMessageBox::Ok);
+            }
+
             btn->setEnabled(false);
         }
         else
         {
             btn->setStyleSheet("border-image: url(:/new/prefix1/222.png);");
             // 点击后让按钮变成不可点击的状态
-            blueMap->setValueToMatrixForUndirectedGraph(x, y);
-            blueMap->printMatrix();
-            cout << "blue" <<endl;
+            _blueBoard[x][y] = 'b';
+            Board<char> board(_blueBoard);
+            blueDFS searcher(&board, 'b');
+            bool result = searcher.solve();
+            if(result)
+            {
+                QMessageBox::information(this, "胜利","✌️✌️✌️蓝方胜利✌️✌️✌️\n\n下一局为红方先手", QMessageBox::Ok);
+            }
             btn->setEnabled(false);
+
         }
             // 让按钮的点击事件触发后，isRed取反
             isRed = !isRed;
@@ -161,19 +182,6 @@ void Hykes::checkRusult(QPushButton*btn)
 {
     QString str = QString::number(btn->pos().x()).append(QString::number(btn->pos().y()));
 }
-
-void Hykes::setRedMatrix(int row, int col)
-{
-    redMatrix[row][col] = 1;
-    std::cout << redMatrix[row][col] << "r   ";
-}
-
-void Hykes::setBlueMatrix(int row, int col)
-{
-    blueMatrix[row][col] = 1;
-    std::cout << blueMatrix[row][col] << "b   ";
-}
-
 
 // Qt必须在paintEvent方法中绘图，在此重载该函数
 void QWidget::paintEvent(QPaintEvent *)

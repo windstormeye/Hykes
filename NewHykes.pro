@@ -13,13 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        hykes.cpp \
-    cmap.cpp \
-    node.cpp
+        hykes.cpp
 
 HEADERS  += hykes.h \
-    cmap.h \
-    node.h
+    dfs.h
 
 FORMS    += hykes.ui
 
